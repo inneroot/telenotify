@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+
+  telenotify:
+    build:
+      context: . # Use an image built from the specified dockerfile in the current directory.
+      dockerfile: Dockerfile.telenotify
+    restart: unless-stopped
