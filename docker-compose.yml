@@ -1,9 +1,10 @@
-version: '3'
+version: '3.8'
 
 services:
 
-  telenotify:
+  telegram:
     build:
       context: . # Use an image built from the specified dockerfile in the current directory.
       dockerfile: Dockerfile.telenotify
     restart: unless-stopped
+    env_file: telegram-token.env

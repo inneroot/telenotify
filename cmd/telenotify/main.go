@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	telebot "github.com/inneroot/telenotify/internal"
+	"github.com/inneroot/telenotify/pkg/logger"
+)
 
 func main() {
-	fmt.Println("server started")
+	logger.SetLogger()
+	telebot.Run()
 }

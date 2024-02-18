@@ -1,12 +1,14 @@
-# Stage 1: Build the Go binary
-FROM golang:1.21 AS build
-WORKDIR /src
+FROM golang:1.22-alpine AS builder
+WORKDIR /usr/local/src
 COPY . .
+RUN go mod download
+
+# build
 RUN go build -o ./bin/telenotify ./cmd/telenotify/main.go
 
 # Stage 2: Create a minimal runtime image
-FROM scratch
-COPY --from=build /src/bin/telenotify /bin/telenotify
+FROM alpine as runner
+COPY --from=builder /usr/local/src/bin/telenotify /
 
 # Specify the command to run your application
-CMD ["/bin/telenotify"]
+CMD [ "/telenotify" ]
