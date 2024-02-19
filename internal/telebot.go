@@ -2,17 +2,17 @@ package telebot
 
 import (
 	"log"
-	"os"
 	"time"
 
 	tele "gopkg.in/telebot.v3"
 )
 
-func Run() {
+func Run(telegramToken string) {
+
 	log.Println("starting telegram bot")
 
 	pref := tele.Settings{
-		Token:  os.Getenv("TELEBOTTOKEN"),
+		Token:  telegramToken,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
 	}
 
@@ -26,6 +26,14 @@ func Run() {
 		return c.Send("Hello!")
 	})
 
+	b.Handle("/start", func(c tele.Context) error {
+		recipient := c.Recipient()
+		log.Println(recipient.Recipient())
+		b.Send(recipient, string(recipient.Recipient()))
+		return nil
+	})
+
 	b.Start()
+
 	log.Println("bot is live")
 }
