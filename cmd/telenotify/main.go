@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	telebot "github.com/inneroot/telenotify/internal"
+	telebot "github.com/inneroot/telenotify/internal/telebot"
 	"github.com/inneroot/telenotify/pkg/logger"
 	"github.com/joho/godotenv"
 )
