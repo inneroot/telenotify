@@ -1,25 +1,21 @@
 package main
 
 import (
-	"log"
+	"context"
 	"os"
 
 	telebot "github.com/inneroot/telenotify/internal/telebot"
 	"github.com/inneroot/telenotify/pkg/logger"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	logger.SetLogger()
+	defaultCtx := context.Background()
 
-	err := godotenv.Load("telegram-token.env")
+	log := logger.SetLogger()
+
+	err := telebot.Run(defaultCtx)
 	if err != nil {
-		log.Println("no telegram-token.env provided", err)
+		log.Error("failed to start telebot", logger.Err(err))
+		os.Exit(1)
 	}
-	token, ok := os.LookupEnv("TELEBOTTOKEN")
-	if !ok {
-		log.Fatal("TELEBOTTOKEN env must be provided")
-	}
-
-	telebot.Run(token)
 }

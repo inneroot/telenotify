@@ -7,8 +7,8 @@ import (
 )
 
 func setHandlers(telebot *tele.Bot) {
-	telebot.Handle("/hello", func(c tele.Context) error {
-		return c.Send("Hello!")
+	telebot.Handle("/ping", func(c tele.Context) error {
+		return c.Send("Pong!")
 	})
 
 	telebot.Handle("/start", func(c tele.Context) error {
