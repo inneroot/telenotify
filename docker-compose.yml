@@ -7,4 +7,20 @@ services:
       context: . # Use an image built from the specified dockerfile in the current directory.
       dockerfile: Dockerfile.telenotify
     restart: unless-stopped
-    env_file: telegram-token.env
+    ports:
+      - "80:80" # telegram
+    env_file:
+      - telegram-token.env
+      - pg.env
+    depends_on:
+      - postgres-local
+
+  postgres-local:
+    image: postgres:latest
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - pg.env
+
+volumes:
+  postgres_data:
