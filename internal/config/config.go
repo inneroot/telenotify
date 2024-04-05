@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -23,7 +24,7 @@ func isDev() bool {
 func GetDbConfig() *PgConfig {
 	err := godotenv.Load("pg.env")
 	if err != nil {
-		log.Println("no pg.env provided")
+		log.Println("no pg.env provided...default will be applied")
 	}
 
 	user, exists := os.LookupEnv("POSTGRES_USER")
@@ -34,7 +35,7 @@ func GetDbConfig() *PgConfig {
 	if !exists {
 		password = "postgres"
 	}
-	dbname, exists := os.LookupEnv("POSTGRES_DB_NAME")
+	dbname, exists := os.LookupEnv("POSTGRES_DB")
 	if !exists {
 		dbname = "postgres"
 	}
@@ -66,4 +67,17 @@ func GetTgToken() string {
 		log.Fatal("TELEBOTTOKEN env must be provided")
 	}
 	return token
+}
+
+func GetPGConnectionString() string {
+	conf := GetDbConfig()
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s",
+		conf.user,
+		conf.password,
+		conf.host,
+		conf.port,
+		conf.dbname,
+	)
+	// urlExample := "postgres://username:password@localhost:5432/database_name"
 }
