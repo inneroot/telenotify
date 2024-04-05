@@ -2,15 +2,16 @@ package telebot
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/inneroot/telenotify/internal/config"
 	tele "gopkg.in/telebot.v3"
 )
 
-func Run(ctx context.Context) error {
-	log.Println("starting telegram bot")
+func Run(ctx context.Context, logger *slog.Logger) error {
+	log := logger.With(slog.String("module", "telebot"))
+	log.Info("starting telegram bot")
 
 	pref := tele.Settings{
 		Token:  config.GetTgToken(),
@@ -19,12 +20,12 @@ func Run(ctx context.Context) error {
 
 	telebot, err := tele.NewBot(pref)
 	if err != nil {
-		log.Fatal(err)
 		return err
 	}
 
-	setHandlers(telebot)
+	setHandlers(log, telebot)
 
+	log.Info("success: bot start")
 	telebot.Start()
 	return nil
 }

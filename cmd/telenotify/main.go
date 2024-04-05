@@ -17,21 +17,24 @@ func main() {
 
 	connStr := config.GetPGConnectionString()
 
-	postgres, dbErr := pg.NewPG(defaultCtx, connStr)
+	postgres, dbErr := pg.NewPG(defaultCtx, log, connStr)
 	if dbErr != nil {
 		log.Error("failed to connect to db", dbErr)
 		os.Exit(1)
 	}
+	defer postgres.Close()
 
-	pingErr := postgres.Ping(defaultCtx)
-	if pingErr != nil {
-		log.Error("failed to ping db", dbErr)
+	log.Debug(connStr)
+	pgErr := postgres.WaitConnection(defaultCtx)
+	if pgErr != nil {
+		log.Error("failed to ping db", "err", pgErr)
 		os.Exit(1)
 	}
+	log.Info("success: connected to db")
 
-	tbErr := telebot.Run(defaultCtx)
+	tbErr := telebot.Run(defaultCtx, log)
 	if tbErr != nil {
-		log.Error("failed to start telebot", dbErr)
+		log.Error("failed to start telebot", "err", dbErr)
 		os.Exit(1)
 	}
 }

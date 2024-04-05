@@ -16,7 +16,7 @@ type PgConfig struct {
 	port     string
 }
 
-func isDev() bool {
+func IsDev() bool {
 	env, exists := os.LookupEnv("ENV")
 	return exists && env == "dev"
 }
@@ -24,7 +24,7 @@ func isDev() bool {
 func GetDbConfig() *PgConfig {
 	err := godotenv.Load("pg.env")
 	if err != nil {
-		log.Println("no pg.env provided...default will be applied")
+		log.Println("no pg.env provided, getting from ENV vars")
 	}
 
 	user, exists := os.LookupEnv("POSTGRES_USER")
@@ -60,7 +60,7 @@ func GetDbConfig() *PgConfig {
 func GetTgToken() string {
 	err := godotenv.Load("telegram-token.env")
 	if err != nil {
-		log.Println("no telegram-token.env provided", err)
+		log.Println("no telegram-token.env provided, getting token from ENV vars")
 	}
 	token, ok := os.LookupEnv("TELEBOTTOKEN")
 	if !ok {
