@@ -10,53 +10,41 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var (
-	retryLimit   = 10
-	retryTimeout = 5 * time.Second
-)
-
-type postgres struct {
-	db  *pgxpool.Pool
-	log *slog.Logger
-}
-
-var (
-	pgInstance *postgres
-	pgOnce     sync.Once
-)
-
-func NewPG(ctx context.Context, logger *slog.Logger, connString string) (*postgres, error) {
-	log := logger.With(slog.String("module", "pg"))
-	var dbErr error
+func NewPGPool(ctx context.Context, connString string) (*pgxpool.Pool, error) {
+	var (
+		err    error
+		pgOnce sync.Once
+		pool   *pgxpool.Pool
+	)
 
 	pgOnce.Do(func() {
-		db, err := pgxpool.New(ctx, connString)
+		pool, err = pgxpool.New(ctx, connString)
 		if err != nil {
-			dbErr = fmt.Errorf("unable to create connection pool: %w", err)
+			err = fmt.Errorf("unable to create connection pool: %w", err)
 		}
-
-		pgInstance = &postgres{db, log}
 	})
 
-	return pgInstance, dbErr
+	err = WaitConnection(ctx, pool, 10, 5*time.Second)
+
+	return pool, err
 }
 
-func (pg *postgres) Ping(ctx context.Context) error {
-	return pg.db.Ping(ctx)
+func Ping(ctx context.Context, pool *pgxpool.Pool) error {
+	return pool.Ping(ctx)
 }
 
-func (pg *postgres) Close() {
-	pg.db.Close()
+func ClosePool(pool *pgxpool.Pool) {
+	pool.Close()
 }
 
-func (pg *postgres) WaitConnection(ctx context.Context) error {
+func WaitConnection(ctx context.Context, pool *pgxpool.Pool, retryLimit int, retryTimeout time.Duration) error {
 	for i := range retryLimit {
-		pingErr := pg.Ping(ctx)
+		pingErr := Ping(ctx, pool)
 		if pingErr != nil {
 			if i >= retryLimit-1 {
 				return pingErr
 			} else {
-				pg.log.Info(fmt.Sprintf("db did not responded. retry in %s...", retryTimeout))
+				slog.Info(fmt.Sprintf("db did not responded. retry in %s...", retryTimeout))
 				time.Sleep(retryTimeout)
 			}
 		}

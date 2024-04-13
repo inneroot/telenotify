@@ -1,14 +1,15 @@
 package telebot
 
 import (
-	"fmt"
+	"context"
 	"log/slog"
 	"strconv"
 
+	"github.com/inneroot/telenotify/internal/repository"
 	tele "gopkg.in/telebot.v3"
 )
 
-func setHandlers(logger *slog.Logger, telebot *tele.Bot) {
+func setHandlers(ctx context.Context, logger *slog.Logger, telebot *tele.Bot, repo repository.SubscriberRepository) {
 	telebot.Handle("/ping", func(c tele.Context) error {
 		recipient := c.Recipient()
 		logger.Info("/ping", "recipient", recipient.Recipient())
@@ -30,9 +31,7 @@ func setHandlers(logger *slog.Logger, telebot *tele.Bot) {
 			telebot.Send(recipient, "error")
 			return err
 		}
-		SubscribedUsers[id] = true
-		subsStr := fmt.Sprintln(SubscribedUsers)
-		slog.Info("subscribed user", slog.String("subs", subsStr))
+		repo.Add(ctx, id)
 		telebot.Send(recipient, "subscribed")
 		return nil
 	})
