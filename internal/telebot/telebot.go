@@ -37,6 +37,7 @@ func Run(ctx context.Context, logger *slog.Logger, repo repository.SubscriberRep
 }
 
 func fakeUpdates(ctx context.Context, logger *slog.Logger, telebot *tele.Bot, repo repository.SubscriberRepository) {
+	logger.Info("fakeUpdates start")
 	for {
 		time.Sleep(20 * time.Second)
 		logger.Info("sending update")
@@ -44,10 +45,10 @@ func fakeUpdates(ctx context.Context, logger *slog.Logger, telebot *tele.Bot, re
 		for sub := range subs {
 			chat, err := telebot.ChatByID(int64(sub))
 			if err != nil {
-				telebot.Send(chat, "update error")
-				logger.Error("update error")
+				logger.Error("update error", "error", err.Error())
+			} else {
+				telebot.Send(chat, "update")
 			}
-			telebot.Send(chat, "update")
 		}
 	}
 }
