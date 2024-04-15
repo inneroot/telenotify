@@ -2,13 +2,18 @@ FROM golang:1.22-alpine AS builder
 WORKDIR /usr/local/src
 COPY . .
 RUN go mod download
+RUN go install github.com/jackc/tern/v2@latest
 
 # build
 RUN go build -o ./bin/telenotify ./cmd/telenotify/main.go
 
 # Stage 2: Create a minimal runtime image
 FROM alpine as runner
-COPY --from=builder /usr/local/src/bin/telenotify /
+WORKDIR /app
+
+COPY --from=builder /usr/local/src/bin/telenotify ./
+COPY --from=builder /go/bin/tern ./
+COPY ./migrations ./migrations
 
 # Specify the command to run your application
-CMD [ "/telenotify" ]
+CMD [ "sh", "-c", "/app/tern migrate --migrations ./migrations/ --conn-string $MIGRATION_CONN_STRING && exec /app/telenotify" ]

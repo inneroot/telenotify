@@ -3,7 +3,7 @@
 create table if not exists recipients
 (
     id         serial primary key,
-    recipient_id bigint,
+    recipient_id bigint UNIQUE,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );
