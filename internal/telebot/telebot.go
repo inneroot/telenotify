@@ -41,9 +41,13 @@ func fakeUpdates(ctx context.Context, logger *slog.Logger, telebot *tele.Bot, re
 	for {
 		time.Sleep(20 * time.Second)
 		logger.Info("sending update")
-		subs, _ := repo.GetAll(ctx)
-		for sub := range subs {
-			chat, err := telebot.ChatByID(int64(sub))
+		ids, err := repo.GetAll(ctx)
+		if err != nil {
+			logger.Debug("fakeUpdates", "error", err.Error())
+			continue
+		}
+		for _, id := range ids {
+			chat, err := telebot.ChatByID(int64(id))
 			if err != nil {
 				logger.Error("update error", "error", err.Error())
 			} else {

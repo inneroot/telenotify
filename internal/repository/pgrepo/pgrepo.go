@@ -29,12 +29,12 @@ func New(ctx context.Context, logger *slog.Logger, timeout time.Duration) (*PGRe
 	return &PGRepository{pool, log, timeout}, err
 }
 
-func (pg *PGRepository) GetAll(ctx context.Context) ([]int, error) {
+func (pg *PGRepository) GetAll(ctx context.Context) ([]int64, error) {
 	cctx, cancel := context.WithTimeout(ctx, pg.timeout)
 	defer cancel()
 	query := `SELECT recipient_id FROM recipients LIMIT 10000`
 
-	var result []int
+	var result []int64
 	if err := pgxscan.Select(cctx, pg.pool, &result, query); err != nil {
 		pg.log.Error("GetAll", "error", err.Error())
 		return result, fmt.Errorf("failed to recipients ids, %w", err)
@@ -43,7 +43,7 @@ func (pg *PGRepository) GetAll(ctx context.Context) ([]int, error) {
 	return result, nil
 }
 
-func (pg *PGRepository) Add(ctx context.Context, id int) error {
+func (pg *PGRepository) Add(ctx context.Context, id int64) error {
 	cctx, cancel := context.WithTimeout(ctx, pg.timeout)
 	defer cancel()
 
@@ -58,7 +58,7 @@ func (pg *PGRepository) Add(ctx context.Context, id int) error {
 	return nil
 }
 
-func (pg *PGRepository) Del(ctx context.Context, id int) error {
+func (pg *PGRepository) Del(ctx context.Context, id int64) error {
 	cctx, cancel := context.WithTimeout(ctx, pg.timeout)
 	defer cancel()
 

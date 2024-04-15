@@ -7,19 +7,19 @@ import (
 )
 
 type MemoryRepository struct {
-	SubscribedUsers map[int]struct{}
+	SubscribedUsers map[int64]struct{}
 	sync.RWMutex
 }
 
 func New() *MemoryRepository {
 	return &MemoryRepository{
-		SubscribedUsers: make(map[int]struct{}),
+		SubscribedUsers: make(map[int64]struct{}),
 	}
 }
 
-func (mr *MemoryRepository) GetAll(ctx context.Context) ([]int, error) {
+func (mr *MemoryRepository) GetAll(ctx context.Context) ([]int64, error) {
 	slog.Debug("MemoryRepo GetAll")
-	ids := []int{}
+	ids := []int64{}
 	mr.RLock()
 	for key := range mr.SubscribedUsers {
 		ids = append(ids, key)
@@ -28,7 +28,7 @@ func (mr *MemoryRepository) GetAll(ctx context.Context) ([]int, error) {
 	return ids, nil
 }
 
-func (mr *MemoryRepository) Add(ctx context.Context, id int) error {
+func (mr *MemoryRepository) Add(ctx context.Context, id int64) error {
 	slog.Debug("MemoryRepo Add", "id", id)
 	mr.Lock()
 	mr.SubscribedUsers[id] = struct{}{}
@@ -36,7 +36,7 @@ func (mr *MemoryRepository) Add(ctx context.Context, id int) error {
 	return nil
 }
 
-func (mr *MemoryRepository) Del(ctx context.Context, id int) error {
+func (mr *MemoryRepository) Del(ctx context.Context, id int64) error {
 	slog.Debug("MemoryRepo delete", "id", id)
 	mr.Lock()
 	delete(mr.SubscribedUsers, id)
