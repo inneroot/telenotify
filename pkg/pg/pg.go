@@ -24,7 +24,7 @@ func NewPGPool(ctx context.Context, connString string) (*pgxpool.Pool, error) {
 		}
 	})
 
-	err = WaitConnection(ctx, pool, 10, 5*time.Second)
+	err = WaitConnection(ctx, pool, 30, time.Second)
 
 	return pool, err
 }
@@ -39,13 +39,18 @@ func ClosePool(pool *pgxpool.Pool) {
 
 func WaitConnection(ctx context.Context, pool *pgxpool.Pool, retryLimit int, retryTimeout time.Duration) error {
 	for i := range retryLimit {
-		pingErr := Ping(ctx, pool)
-		if pingErr != nil {
-			if i >= retryLimit-1 {
-				return pingErr
-			} else {
-				slog.Info(fmt.Sprintf("db did not responded. retry in %s...", retryTimeout))
-				time.Sleep(retryTimeout)
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			pingErr := Ping(ctx, pool)
+			if pingErr != nil {
+				if i >= retryLimit-1 {
+					return pingErr
+				} else {
+					slog.Info(fmt.Sprintf("db did not responded. retry in %s...", retryTimeout))
+					time.Sleep(retryTimeout)
+				}
 			}
 		}
 	}
