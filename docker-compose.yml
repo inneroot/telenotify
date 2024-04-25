@@ -9,6 +9,7 @@ services:
     restart: unless-stopped
     ports:
       - "80:80" # telegram
+      - "5555:5555"
     env_file:
       - telegram-token.env
       - pg.env

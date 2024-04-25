@@ -26,7 +26,11 @@ func New(ctx context.Context, logger *slog.Logger, timeout time.Duration) (*PGRe
 	connStr := config.GetPGConnectionString()
 	log := logger.With(slog.String("module", "PGRepository"))
 	pool, err := pg.NewPGPool(ctx, connStr)
-	return &PGRepository{pool, log, timeout}, err
+	if err != nil {
+		return nil, err
+	}
+	log.Info("pg pool connected")
+	return &PGRepository{pool, log, timeout}, nil
 }
 
 func (pg *PGRepository) GetAll(ctx context.Context) ([]int64, error) {
@@ -74,5 +78,6 @@ func (pg *PGRepository) Del(ctx context.Context, id int64) error {
 }
 
 func (pg *PGRepository) Close() {
+	pg.log.Info("closing pg connection pool")
 	pg.pool.Close()
 }

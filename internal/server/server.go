@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"os"
 
 	grpcNotify "github.com/inneroot/telenotify/internal/api/grpc/notify"
 	"google.golang.org/grpc"
@@ -27,6 +28,14 @@ func New(logger *slog.Logger,
 	}
 }
 
+func (s *GRPCServer) MustRunInGoRoutine() {
+	go func() {
+		if err := s.Run(); err != nil {
+			os.Exit(1)
+		}
+	}()
+}
+
 func (s *GRPCServer) Run() error {
 	const op = "Run"
 	log := s.log.With(slog.String("op", op))
@@ -40,12 +49,12 @@ func (s *GRPCServer) Run() error {
 	if err := s.gRPCServer.Serve(l); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
+	log.Info("grpcServer started")
 	return nil
 }
 
 func (s *GRPCServer) Stop() {
 	const op = "Stop"
 	s.log.With(slog.String("op", op)).Info("stopping grpc server")
-
 	s.gRPCServer.GracefulStop()
 }

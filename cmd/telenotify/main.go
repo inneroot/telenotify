@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 	"os/signal"
 	"syscall"
 
@@ -30,23 +29,13 @@ func main() {
 	defer repo.Close()
 
 	grpcServer := grpcserver.New(log, 5555)
+	grpcServer.MustRunInGoRoutine()
+	defer grpcServer.Stop()
 
-	go func() {
-		if err := grpcServer.Run(); err != nil {
-			os.Exit(1)
-		}
-	}()
-	go func() {
-		dbErr := telebot.Run(ctx, log, repo)
-		if dbErr != nil {
-			log.Error("failed to start telebot", "err", dbErr)
-			os.Exit(1)
-		}
-	}()
+	bot := telebot.MustInit(ctx, log, repo)
+	bot.Run()
+	defer bot.Stop()
 
-	<-ctx.Done() // graceful shutdown
-	log.Info("got interruption signal")
-	// repo.Close()
-	grpcServer.Stop()
-	log.Info("telebot was shutdown gracefully")
+	<-ctx.Done() // graceful shutdown with deferred functions
+	log.Info("telebot will be shutdown gracefully")
 }

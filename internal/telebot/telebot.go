@@ -3,6 +3,7 @@ package telebot
 import (
 	"context"
 	"log/slog"
+	"os"
 	"time"
 
 	"github.com/inneroot/telenotify/internal/config"
@@ -14,9 +15,23 @@ var (
 	SubscribedUsers = make(map[int]bool)
 )
 
-func Run(ctx context.Context, logger *slog.Logger, repo repository.SubscriberRepository) error {
+type Bot struct {
+	log     *slog.Logger
+	telebot *tele.Bot
+	repo    repository.SubscriberRepository
+}
+
+func MustInit(ctx context.Context, logger *slog.Logger, repo repository.SubscriberRepository) *Bot {
+	bot, err := New(ctx, logger, repo)
+	if err != nil {
+		logger.Error("failed to start telebot", "err", err)
+		os.Exit(1)
+	}
+	return bot
+}
+
+func New(ctx context.Context, logger *slog.Logger, repo repository.SubscriberRepository) (*Bot, error) {
 	log := logger.With(slog.String("module", "telebot"))
-	log.Info("starting telegram bot")
 
 	pref := tele.Settings{
 		Token:  config.GetTgToken(),
@@ -25,15 +40,28 @@ func Run(ctx context.Context, logger *slog.Logger, repo repository.SubscriberRep
 
 	telebot, err := tele.NewBot(pref)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	setHandlers(ctx, log, telebot, repo)
 
-	go fakeUpdates(ctx, log, telebot, repo)
-	log.Info("success: bot start")
-	telebot.Start()
-	return nil
+	return &Bot{
+		log:     log,
+		repo:    repo,
+		telebot: telebot,
+	}, nil
+}
+
+func (b *Bot) Run() {
+	go func() {
+		b.telebot.Start()
+	}()
+	b.log.Info("telebot started")
+}
+
+func (b *Bot) Stop() {
+	b.log.Info("stopping telebot")
+	b.telebot.Stop()
 }
 
 func fakeUpdates(ctx context.Context, logger *slog.Logger, telebot *tele.Bot, repo repository.SubscriberRepository) {
