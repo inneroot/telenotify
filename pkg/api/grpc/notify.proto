@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package notify;
+
+option go_package = "telebot.notify";
+
+service NotifyService {
+  rpc Notify (NotifyRequest) returns (NotifyResponse) {}
+}
+
+message NotifyRequest {
+  string message = 1;
+  string sign = 2;
+}
+
+message NotifyResponse {}

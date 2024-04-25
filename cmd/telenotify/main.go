@@ -11,6 +11,7 @@ import (
 
 	// "github.com/inneroot/telenotify/internal/repository/memory"
 	"github.com/inneroot/telenotify/internal/repository/pgrepo"
+	grpcserver "github.com/inneroot/telenotify/internal/server"
 	"github.com/inneroot/telenotify/internal/telebot"
 	"github.com/inneroot/telenotify/pkg/logger"
 )
@@ -28,6 +29,13 @@ func main() {
 	// repo := memory.New()
 	defer repo.Close()
 
+	grpcServer := grpcserver.New(log, 5555)
+
+	go func() {
+		if err := grpcServer.Run(); err != nil {
+			os.Exit(1)
+		}
+	}()
 	go func() {
 		dbErr := telebot.Run(ctx, log, repo)
 		if dbErr != nil {
@@ -36,9 +44,9 @@ func main() {
 		}
 	}()
 
-	<-ctx.Done()
+	<-ctx.Done() // graceful shutdown
 	log.Info("got interruption signal")
-	// TODO graceful shutdown
-	repo.Close()
+	// repo.Close()
+	grpcServer.Stop()
 	log.Info("telebot was shutdown gracefully")
 }
