@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os/signal"
 	"syscall"
 
@@ -21,20 +20,17 @@ func main() {
 
 	log := logger.SetLogger()
 
-	repo, err := pgrepo.New(ctx, log, 5*time.Second)
-	if err != nil {
-		panic(fmt.Errorf("unable to init repo: %v", err.Error()))
-	}
+	repo := pgrepo.MustInit(ctx, log, 5*time.Second)
 	// repo := memory.New()
 	defer repo.Close()
-
-	grpcServer := grpcserver.New(log, 5555)
-	grpcServer.MustRunInGoRoutine()
-	defer grpcServer.Stop()
 
 	bot := telebot.MustInit(ctx, log, repo)
 	bot.Run()
 	defer bot.Stop()
+
+	grpcServer := grpcserver.New(bot, 5555, log)
+	grpcServer.MustRunInGoRoutine()
+	defer grpcServer.Stop()
 
 	<-ctx.Done() // graceful shutdown with deferred functions
 	log.Info("telebot will be shutdown gracefully")

@@ -6,7 +6,8 @@ import (
 	"net"
 	"os"
 
-	grpcNotify "github.com/inneroot/telenotify/internal/api/grpc/notify"
+	"github.com/inneroot/telenotify/internal/api/grpchandler"
+	notify_service "github.com/inneroot/telenotify/internal/service"
 	"google.golang.org/grpc"
 )
 
@@ -16,10 +17,11 @@ type GRPCServer struct {
 	port       int
 }
 
-func New(logger *slog.Logger,
-	port int) *GRPCServer {
+func New(notifier notify_service.INotifier, port int, logger *slog.Logger) *GRPCServer {
 	gRPCServer := grpc.NewServer()
-	grpcNotify.Notify(gRPCServer)
+	ns := notify_service.New(notifier)
+	serverApi := grpchandler.New(ns)
+	grpchandler.RegisterNotifyServiceServer(gRPCServer, serverApi)
 	log := logger.With(slog.String("module", "grpcserver"))
 	return &GRPCServer{
 		log,
@@ -44,7 +46,7 @@ func (s *GRPCServer) Run() error {
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
-	log.Info("grpc server started", slog.String("addr", l.Addr().String()))
+	log.Info("grpc server listening", slog.String("addr", l.Addr().String()))
 
 	if err := s.gRPCServer.Serve(l); err != nil {
 		return fmt.Errorf("%s: %w", op, err)

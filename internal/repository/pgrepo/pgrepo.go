@@ -22,6 +22,14 @@ type PGRepository struct {
 	timeout time.Duration
 }
 
+func MustInit(ctx context.Context, logger *slog.Logger, timeout time.Duration) *PGRepository {
+	repo, err := New(ctx, logger, timeout)
+	if err != nil {
+		panic(fmt.Errorf("unable to init repo: %v", err.Error()))
+	}
+	return repo
+}
+
 func New(ctx context.Context, logger *slog.Logger, timeout time.Duration) (*PGRepository, error) {
 	connStr := config.GetPGConnectionString()
 	log := logger.With(slog.String("module", "PGRepository"))
