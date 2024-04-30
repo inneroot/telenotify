@@ -2,6 +2,7 @@ package telebot
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -62,6 +63,25 @@ func (b *Bot) Run() {
 func (b *Bot) Stop() {
 	b.log.Info("stopping telebot")
 	b.telebot.Stop()
+}
+
+func (b *Bot) NotifySubscribed(ctx context.Context, message string) error {
+	const op = "NotifySubscribed"
+	b.log.Info(op)
+
+	ids, err := b.repo.GetAll(ctx)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	for _, id := range ids {
+		chat, err := b.telebot.ChatByID(int64(id))
+		if err != nil {
+			return fmt.Errorf("%s: %w", op, err)
+		} else {
+			b.telebot.Send(chat, message)
+		}
+	}
+	return nil
 }
 
 func fakeUpdates(ctx context.Context, logger *slog.Logger, telebot *tele.Bot, repo repository.SubscriberRepository) {
