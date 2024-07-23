@@ -1,7 +1,4 @@
-version: '3.9'
-
 services:
-
   telegram:
     build:
       context: . # Use an image built from the specified dockerfile in the current directory.
