@@ -9,6 +9,7 @@ import (
 	"github.com/inneroot/telenotify/internal/api/grpchandler"
 	notify_service "github.com/inneroot/telenotify/internal/service"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 type GRPCServer struct {
@@ -22,6 +23,7 @@ func New(notifier notify_service.INotifier, port int, logger *slog.Logger) *GRPC
 	ns := notify_service.New(notifier)
 	serverApi := grpchandler.New(ns)
 	grpchandler.RegisterNotifyServiceServer(gRPCServer, serverApi)
+	reflection.Register(gRPCServer)
 	log := logger.With(slog.String("module", "grpcserver"))
 	return &GRPCServer{
 		log,
