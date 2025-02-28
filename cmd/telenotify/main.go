@@ -8,6 +8,7 @@ import (
 	"time"
 
 	// "github.com/inneroot/telenotify/internal/repository/memory"
+	"github.com/inneroot/telenotify/internal/config"
 	"github.com/inneroot/telenotify/internal/repository/pgrepo"
 	grpcserver "github.com/inneroot/telenotify/internal/server/grpc"
 	httpserver "github.com/inneroot/telenotify/internal/server/http"
@@ -24,17 +25,18 @@ func main() {
 	repo := pgrepo.MustInit(ctx, log, 5*time.Second)
 	// repo := memory.New()
 	defer repo.Close()
+	serverPorts := config.GetServerPorts()
 
 	log.Info("starting telegram bot")
 	bot := telebot.MustInit(ctx, log, repo)
 	bot.Run()
 	defer bot.Stop()
 
-	grpcServer := grpcserver.New(bot, 5555, log)
+	grpcServer := grpcserver.New(bot, serverPorts.GrpcPort, log)
 	grpcServer.MustRunInGoRoutine()
 	defer grpcServer.Stop(ctx)
 
-	httpServer := httpserver.New(bot, 8080, log)
+	httpServer := httpserver.New(bot, serverPorts.HttpPort, log)
 	httpServer.MustRunInGoRoutine()
 	defer httpServer.Stop(ctx)
 

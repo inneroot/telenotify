@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -80,4 +81,39 @@ func GetPGConnectionString() string {
 		conf.dbname,
 	)
 	// urlExample := "postgres://username:password@localhost:5432/database_name"
+}
+
+type ServerPortsCfg struct {
+	GrpcPort int
+	HttpPort int
+}
+
+func GetServerPorts() *ServerPortsCfg {
+	err := godotenv.Load("server.env")
+	if err != nil {
+		log.Println("no server.env provided, getting from ENV vars")
+	}
+	grpcportStr, exists := os.LookupEnv("grpcport")
+	if !exists {
+		grpcportStr = "5555"
+	}
+	httpportStr, exists := os.LookupEnv("httpport")
+	if !exists {
+		httpportStr = "8080"
+	}
+
+	grpcport, err := strconv.Atoi(grpcportStr)
+	if err != nil {
+		log.Fatal("Error reading grpc port from env")
+	}
+
+	httpport, err := strconv.Atoi(httpportStr)
+	if err != nil {
+		log.Fatal("Error reading http port from env")
+	}
+
+	return &ServerPortsCfg{
+		GrpcPort: grpcport,
+		HttpPort: httpport,
+	}
 }
