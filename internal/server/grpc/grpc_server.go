@@ -1,6 +1,7 @@
 package grpcserver
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net"
@@ -48,7 +49,7 @@ func (s *GRPCServer) Run() error {
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
-	log.Info("grpc server listening", slog.String("addr", l.Addr().String()))
+	log.Info("grpc server listening", slog.String("addr", l.Addr().String()), slog.Int("port", s.port))
 
 	if err := s.gRPCServer.Serve(l); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
@@ -57,7 +58,7 @@ func (s *GRPCServer) Run() error {
 	return nil
 }
 
-func (s *GRPCServer) Stop() {
+func (s *GRPCServer) Stop(ctx context.Context) {
 	const op = "Stop"
 	s.log.With(slog.String("op", op)).Info("stopping grpc server")
 	s.gRPCServer.GracefulStop()

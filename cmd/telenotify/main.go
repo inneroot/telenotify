@@ -9,7 +9,8 @@ import (
 
 	// "github.com/inneroot/telenotify/internal/repository/memory"
 	"github.com/inneroot/telenotify/internal/repository/pgrepo"
-	grpcserver "github.com/inneroot/telenotify/internal/server"
+	grpcserver "github.com/inneroot/telenotify/internal/server/grpc"
+	httpserver "github.com/inneroot/telenotify/internal/server/http"
 	"github.com/inneroot/telenotify/internal/telebot"
 	"github.com/inneroot/telenotify/pkg/logger"
 )
@@ -30,7 +31,11 @@ func main() {
 
 	grpcServer := grpcserver.New(bot, 5555, log)
 	grpcServer.MustRunInGoRoutine()
-	defer grpcServer.Stop()
+	defer grpcServer.Stop(ctx)
+
+	httpServer := httpserver.New(bot, 8080, log)
+	httpServer.MustRunInGoRoutine()
+	defer httpServer.Stop(ctx)
 
 	<-ctx.Done() // graceful shutdown with deferred functions
 	log.Info("telebot will be shutdown gracefully")
