@@ -61,6 +61,7 @@ func (r *Router) handleNotify(w http.ResponseWriter, req *http.Request) {
 	if err := r.ns.Notify(context.Background(), notification.Message); err != nil {
 		slog.Error("http notify: unmarshal request body", slog.String("error", err.Error()))
 		http.Error(w, "error reading request body", http.StatusBadRequest)
+		return
 	}
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "message have bin sent")
