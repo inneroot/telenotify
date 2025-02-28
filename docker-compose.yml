@@ -1,8 +1,10 @@
 services:
   telegram:
+    image: inneroot/telenotify:latest
+    pull_policy: always
     build:
       context: . # Use an image built from the specified dockerfile in the current directory.
-      dockerfile: Dockerfile.telenotify
+      dockerfile: Dockerfile
     restart: unless-stopped
     ports:
       - "80:80" # telegram

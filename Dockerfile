@@ -10,7 +10,7 @@ COPY . .
 RUN go build -o ./bin/telenotify ./cmd/telenotify/main.go
 
 # Stage 2: Create a minimal runtime image
-FROM alpine as runner
+FROM alpine AS runner
 WORKDIR /app
 COPY --from=builder /go/bin/tern ./
 COPY --from=builder /go/bin/grpcurl ./

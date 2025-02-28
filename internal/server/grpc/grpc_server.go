@@ -36,6 +36,7 @@ func New(notifier notify_service.INotifier, port int, logger *slog.Logger) *GRPC
 func (s *GRPCServer) MustRunInGoRoutine() {
 	go func() {
 		if err := s.Run(); err != nil {
+			s.log.Error(err.Error())
 			os.Exit(1)
 		}
 	}()
@@ -54,7 +55,6 @@ func (s *GRPCServer) Run() error {
 	if err := s.gRPCServer.Serve(l); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
-	log.Info("grpcServer started")
 	return nil
 }
 

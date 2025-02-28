@@ -25,6 +25,7 @@ func main() {
 	// repo := memory.New()
 	defer repo.Close()
 
+	log.Info("starting telegram bot")
 	bot := telebot.MustInit(ctx, log, repo)
 	bot.Run()
 	defer bot.Stop()

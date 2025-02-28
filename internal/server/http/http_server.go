@@ -36,6 +36,7 @@ func New(notifier notify_service.INotifier, port int, logger *slog.Logger) *Http
 func (s *HttpServer) MustRunInGoRoutine() {
 	go func() {
 		if err := s.Run(); err != nil {
+			s.log.Error(err.Error())
 			os.Exit(1)
 		}
 	}()
@@ -45,10 +46,10 @@ func (s *HttpServer) Run() error {
 	const op = "Run"
 	log := s.log.With(slog.String("op", op))
 
+	log.Info("http server listening", slog.Int("port", s.port))
 	if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return fmt.Errorf("%s: %w", op, err)
 	}
-	log.Info("http server listening", slog.Int("port", s.port))
 	return nil
 }
 
