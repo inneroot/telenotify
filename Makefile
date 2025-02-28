@@ -18,7 +18,7 @@ docker-build:
 
 .PHONY: docker-rebuild
 docker-rebuild:
-	docker image rm inneroot/telenotify:latest && docker build -t inneroot/goblag:latest .
+	docker image rm inneroot/telenotify:latest && docker build -t inneroot/telenotify:latest .
 
 .PHONY: docker-push
 docker-push:
